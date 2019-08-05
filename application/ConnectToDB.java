@@ -52,11 +52,6 @@ public class ConnectToDB {
             ResultSetMetaData metaData = resultSet.getMetaData();
             int cols = metaData.getColumnCount();
 
-                // get column names
-//            for (int i = 1; i <= cols; i++) {
-//                ans += metaData.getColumnName(i) + "\t\t";
-//            }
-
             int rows = 0;
             while (resultSet.next()) {
 
