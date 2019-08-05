@@ -114,7 +114,7 @@ public class Main extends Application {
             
             Button randomListing = new Button("Random Listing");
             randomListing.setTooltip(new Tooltip("Click to find a random listing"));
-            Search.setOnAction(new EventHandler<ActionEvent>() {
+            randomListing.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
                     
