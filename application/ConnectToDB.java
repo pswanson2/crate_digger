@@ -72,7 +72,6 @@ public class ConnectToDB {
 
             for (int i = 0; i < rows; i++) {
                 tuples[i] = rowStringData[i].split("\t\t");
-                System.out.println(tuples[i][1]);
             }
 
 
@@ -83,4 +82,8 @@ public class ConnectToDB {
         
         return tuples;
     }
+    
+    // add to cart
+    
+    // remove from cart
 }
