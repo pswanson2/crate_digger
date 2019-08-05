@@ -6,21 +6,30 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-
+import java.util.Arrays;
 import java.util.List;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -38,7 +47,7 @@ public class Main extends Application {
         /* Set up the GUI */
 		try {
 			BorderPane root = new BorderPane();
-			Scene scene = new Scene(root,1000,600);
+			Scene scene = new Scene(root,1300,600);
 			
 			/* set title of the application */
             primaryStage.setTitle("Crate Digger");
@@ -60,11 +69,15 @@ public class Main extends Application {
             TextField labelSearch = new TextField();
             TextField formatSearch = new TextField();
             TextField priceSearch = new TextField();
+            
+            TableView<String[]> table = new TableView<>(); //This will appear in center
+            
                         
             /* Add a button to find the listings from a given artist */
             Button Search = new Button("Search");
             Search.setTooltip(new Tooltip("Search for a Listing with the above criteria"));
             Search.setOnAction(new EventHandler<ActionEvent>() {
+                @SuppressWarnings("unchecked")
                 @Override
                 public void handle(ActionEvent event) {
                     
@@ -94,21 +107,37 @@ public class Main extends Application {
                         first_flag = false;
                     }
                     q += ";";
-                    System.out.println(q); //TODO remove
                     
                     /* Only submit a querry if they typed something into one of the fields */
                     if(!first_flag) {
-                        myDB.Query(q);
+                        String [][] result = myDB.Query(q);
+                        
+                        ObservableList<String[]> data = FXCollections.observableArrayList();
+                        data.addAll(Arrays.asList(result));
+                        data.remove(0);//remove titles from data
+                        
+                        for (int i = 0; i < result[0].length; i++) {
+                            TableColumn tc = new TableColumn(result[0][i]);
+                            final int colNo = i;
+                            tc.setCellValueFactory(new Callback<CellDataFeatures<String[], String>, ObservableValue<String>>() {
+                                @Override
+                                public ObservableValue<String> call(CellDataFeatures<String[], String> p) {
+                                    return new SimpleStringProperty((p.getValue()[colNo]));
+                                }
+                            });
+                            tc.setPrefWidth(90);
+                            table.getColumns().add(tc);
+                        }
+                        table.setItems(data);
+                        
+                        
+                    } else {
+                        Alert noText = new Alert(AlertType.INFORMATION);
+                        noText.setTitle("ALERT");
+                        noText.setHeaderText(null);
+                        noText.setContentText("Please enter a search request.");
+                        noText.showAndWait();
                     }
-                    
-                    /* Output the result */
-                    final Stage dialog = new Stage();
-                    dialog.initModality(Modality.APPLICATION_MODAL);
-                    dialog.initOwner(primaryStage);
-                    VBox dialogVbox = new VBox();
-                    Scene dialogScene = new Scene(dialogVbox, 300, 200);
-                    dialog.setScene(dialogScene);
-                    dialog.show();
                 }
             });
             
@@ -123,8 +152,6 @@ public class Main extends Application {
             
             
             /* Begin building center */
-            TableView<String[]> searchResults = new TableView<String[]>();
-            
             
             
             
@@ -156,7 +183,7 @@ public class Main extends Application {
                     new Label("\n"), Search, new Label("\n"), randomListing);
             left.setPrefWidth(200);
             
-            center.getChildren().addAll(new Label("\n"), new Label("Search Results"), new Label("\n"), searchResults);
+            center.getChildren().addAll(new Label("\n"), new Label("Search Results"), new Label("\n"), table);
             
             right.getChildren().addAll(new Label("\n"), new Label("Cart"), new Label("\n"), cart, new Label("\n"), refreshCart, new Label("\n"), delete);
             right.setPrefWidth(300);
