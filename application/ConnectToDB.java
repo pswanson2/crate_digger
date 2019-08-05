@@ -52,7 +52,16 @@ public class ConnectToDB {
             ResultSetMetaData metaData = resultSet.getMetaData();
             int cols = metaData.getColumnCount();
 
-            int rows = 0;
+            // get column names
+            for (int i = 1; i <= cols; i++) {
+                ans += metaData.getColumnName(i) + "\t\t";
+            }
+            
+            String[] colHeaders = ans.split("\t\t");
+            ans = "";
+            
+            
+            int rows = 1;
             while (resultSet.next()) {
 
                 for (int i = 1; i <= cols; i++) {
@@ -61,15 +70,16 @@ public class ConnectToDB {
                 ans += "\n";
                 rows++;
             }
-
+            
             String[] rowStringData = ans.split("\n"); // all tuple data but in row strings
             tuples = new String[rows][cols]; // all data in 2D array
 
-            for (int i = 0; i < rows; i++) {
-                tuples[i] = rowStringData[i].split("\t\t");
+            // populate first row with column headers
+            tuples[0] = colHeaders;
+            
+            for (int i = 0; i < rows - 1; i++) {
+                tuples[i + 1] = rowStringData[i].split("\t\t");
             }
-
-
         }
         catch (SQLException e) {
             e.printStackTrace();
