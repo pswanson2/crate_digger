@@ -13,7 +13,7 @@ public class ConnectToDB {
     static final String netID ="root"; // Please enter your netId
     static final String hostName ="localhost"; //washington.uww.edu
     static final String databaseURL ="jdbc:mysql://"+hostName+"/"+databasePrefix+"?autoReconnect=true&useSSL=false";
-    static final String password="dddddddd"; // please enter your own password
+    static final String password="DataBoyz6"; // please enter your own password
    
     private Connection connection = null;
     private Statement statement = null;
@@ -40,32 +40,47 @@ public class ConnectToDB {
      * Once it returns an array, we will be able to display the query result as a text field in the GUI.
      * @param sqlQuery
      */
-    public ResultSet Query(String sqlQuery) {
+    public String[][] Query(String sqlQuery) {
     
+        String ans = "";
+        String[] colNames = new String[0]; // column headers
+        String[][] tuples = new String[0][0]; // 2D array of query results
         try {
             statement = connection.createStatement();
             resultSet = statement.executeQuery(sqlQuery);
 
-//            ResultSetMetaData metaData = resultSet.getMetaData();
-//            int columns = metaData.getColumnCount();
-//
-//            for (int i=1; i<= columns; i++) {
-//                System.out.print(metaData.getColumnName(i)+"\t");
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int cols = metaData.getColumnCount();
+
+                // get column names
+//            for (int i = 1; i <= cols; i++) {
+//                ans += metaData.getColumnName(i) + "\t\t";
 //            }
-//
-//            System.out.println();
-//
-//            while (resultSet.next()) {
-//       
-//                for (int i=1; i<= columns; i++) {
-//                    System.out.print(resultSet.getObject(i)+"\t\t");
-//                }
-//                System.out.println();
-//            }
+
+            int rows = 0;
+            while (resultSet.next()) {
+
+                for (int i = 1; i <= cols; i++) {
+                    ans += resultSet.getObject(i) + "\t\t";
+                }
+                ans += "\n";
+                rows++;
+            }
+
+            String[] rowStringData = ans.split("\n"); // all tuple data but in row strings
+            tuples = new String[rows][cols]; // all data in 2D array
+
+            for (int i = 0; i < rows; i++) {
+                tuples[i] = rowStringData[i].split("\t\t");
+                System.out.println(tuples[i][1]);
+            }
+
+
         }
         catch (SQLException e) {
             e.printStackTrace();
         }
-        return resultSet;
+        
+        return tuples;
     }
 }
