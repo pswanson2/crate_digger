@@ -83,7 +83,7 @@ public class Main extends Application {
                 public void handle(ActionEvent event) {
                     
                     /* Build the query */
-                    String q = new String("SELECT r.title, a.artist_name, la.label_name, li.format, li.price, li.listing_id FROM " + //TODO added li.listing_id
+                    String q = new String("SELECT r.title, a.artist_name, la.label_name, li.format, li.price, li.listing_id FROM " + 
                             "Album r, Artist a, Label la, Listing li WHERE r.release_id = li.release_id AND r.label_id = la.label_id " + 
                             "AND r.artist_id = a.artist_id");
                     boolean first_flag = true; //check if this is the first condition. Used to properly format the query
@@ -236,7 +236,7 @@ public class Main extends Application {
                             tc.setPrefWidth(200);
                         }
                         else {
-                            tc.setPrefWidth(90);
+                            tc.setPrefWidth(100);
                         }
                         cart.getColumns().add(tc);
                     }
@@ -257,6 +257,33 @@ public class Main extends Application {
                 }
             });
             
+            // get condition of selected record 
+            Button checkCondition = new Button("Request Condition");
+            checkCondition.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    
+                    String[] selectedListing = table.getSelectionModel().getSelectedItem();
+                    String condition = "Please select an item";
+                    try {
+                        condition = myDB.getCondition(selectedListing[5]);
+                    } catch(Exception e) { }
+                    
+                    final Stage dialog = new Stage();
+                    dialog.initModality(Modality.APPLICATION_MODAL);
+                    dialog.initOwner(primaryStage);
+                    VBox dialogVbox = new VBox();
+                    Label l = new Label();
+                    l.setText(condition);
+                    
+                    dialogVbox.getChildren().add(l);
+                    l.setWrapText(true);
+                    Scene dialogScene = new Scene(dialogVbox, 200, 100);
+                    dialog.setScene(dialogScene);
+                    dialog.show();
+                }
+            });
+            
             
             /* Begin building right */
             Button items = new Button("Cart Summary");
@@ -273,26 +300,19 @@ public class Main extends Application {
                     /* Querry for # items in cart and the total price */
                     String[][] numItems = myDB.Query("CALL getCartSize();");
                     int num = Integer.parseInt(numItems[1][0]);
-                    
                     String[][] priItems = myDB.Query("CALL getCartPrice();");
-                    
                     Double pri = 0.0;
                     try {
                         pri = Double.parseDouble(priItems[1][0]);
-                    } catch(Exception e) {
-                        
-                    }
-                    
+                    } catch(Exception e) { }
                     String p = String.format("%.2f", pri);
                     
-                    
-                    l.setText("Total items in cart: " + num +"\n\nTotal price of cart: $" + p); //TODO fix rounding issue
+                    /* Display the dialog box */
+                    l.setText("Total items in cart: " + num +"\n\nTotal price of cart: $" + p);
                     dialogVbox.getChildren().add(l);
                     l.setWrapText(true);
                     Scene dialogScene = new Scene(dialogVbox, 200, 100);
-
                     dialog.setScene(dialogScene);
-
                     dialog.show();
                 }
             });
@@ -319,7 +339,7 @@ public class Main extends Application {
                     new Label("\n"), Search, new Label("\n"), randomListing);
             left.setPrefWidth(200);
             
-            center.getChildren().addAll(new Label("\n"), new Label("Search Results"), new Label("\n"), table, new Label("\n"), addToCart);
+            center.getChildren().addAll(new Label("\n"), new Label("Search Results"), new Label("\n"), table, new Label("\n"), addToCart, new Label("\n"), checkCondition);
             
             right.getChildren().addAll(new Label("\n"), new Label("Cart"), new Label("\n"), cart, new Label("\n"), items, new Label("\n"), delete);
             right.setPrefWidth(300);
