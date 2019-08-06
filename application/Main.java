@@ -276,13 +276,15 @@ public class Main extends Application {
                     
                     String[][] priItems = myDB.Query("CALL getCartPrice();");
                     
-                    Double pri = Double.parseDouble(priItems[1][0]);
-                    String p = "0";
+                    Double pri = 0.0;
                     try {
-                        p = String.format("%.2f", pri);
+                        pri = Double.parseDouble(priItems[1][0]);
                     } catch(Exception e) {
                         
                     }
+                    
+                    String p = String.format("%.2f", pri);
+                    
                     
                     l.setText("Total items in cart: " + num +"\n\nTotal price of cart: $" + p); //TODO fix rounding issue
                     dialogVbox.getChildren().add(l);
