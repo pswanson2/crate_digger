@@ -36,7 +36,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
 public class Main extends Application {
-        
+    
 	@Override
 	public void start(Stage primaryStage) {
 	    
@@ -71,6 +71,7 @@ public class Main extends Application {
             TextField priceSearch = new TextField();
             
             TableView<String[]> table = new TableView<>(); //This will appear in center
+            TableView<String[]> cart = new TableView<String[]>(); //This will appear on the right
             
                         
             /* Add a button to find the listings from a given artist */
@@ -82,7 +83,7 @@ public class Main extends Application {
                 public void handle(ActionEvent event) {
                     
                     /* Build the query */
-                    String q = new String("SELECT r.title, a.artist_name, la.label_name, li.format, li.price FROM " + 
+                    String q = new String("SELECT r.title, a.artist_name, la.label_name, li.format, li.price, li.listing_id FROM " + //TODO added li.listing_id
                             "Album r, Artist a, Label la, Listing li WHERE r.release_id = li.release_id AND r.label_id = la.label_id " + 
                             "AND r.artist_id = a.artist_id");
                     boolean first_flag = true; //check if this is the first condition. Used to properly format the query
@@ -110,13 +111,15 @@ public class Main extends Application {
                     
                     /* Only submit a querry if they typed something into one of the fields */
                     if(!first_flag) {
+                        table.getColumns().clear();
+                        
                         String [][] result = myDB.Query(q);
                         
                         ObservableList<String[]> data = FXCollections.observableArrayList();
                         data.addAll(Arrays.asList(result));
                         data.remove(0);//remove titles from data
                         
-                        for (int i = 0; i < result[0].length; i++) {
+                        for (int i = 0; i < result[0].length; i++) { 
                             TableColumn tc = new TableColumn(result[0][i]);
                             final int colNo = i;
                             tc.setCellValueFactory(new Callback<CellDataFeatures<String[], String>, ObservableValue<String>>() {
@@ -125,11 +128,24 @@ public class Main extends Application {
                                     return new SimpleStringProperty((p.getValue()[colNo]));
                                 }
                             });
-                            tc.setPrefWidth(90);
+                            if(i == 0) {
+                                tc.setPrefWidth(230);
+                            }
+                            else if(i == 1) {
+                                tc.setPrefWidth(230);
+                            }
+                            else if(i == 2) {
+                                tc.setPrefWidth(150);
+                            }
+                            else if(i == 3) {
+                                tc.setPrefWidth(100);
+                            }
+                            else {
+                                tc.setPrefWidth(80);
+                            }
                             table.getColumns().add(tc);
                         }
                         table.setItems(data);
-                        
                         
                     } else {
                         Alert noText = new Alert(AlertType.INFORMATION);
@@ -144,26 +160,138 @@ public class Main extends Application {
             Button randomListing = new Button("Random Listing");
             randomListing.setTooltip(new Tooltip("Click to find a random listing"));
             randomListing.setOnAction(new EventHandler<ActionEvent>() {
+                @SuppressWarnings("unchecked")
                 @Override
                 public void handle(ActionEvent event) {
                     
+                    table.getColumns().clear();
+                    
+                    String[][] result = myDB.Query("CALL getRandomListing_id()");
+                    ObservableList<String[]> data = FXCollections.observableArrayList();
+                    data.addAll(Arrays.asList(result));
+                    data.remove(0);//remove titles from data
+                    
+                    for (int i = 0; i < result[0].length; i++) { 
+                        TableColumn tc = new TableColumn(result[0][i]);
+                        final int colNo = i;
+                        tc.setCellValueFactory(new Callback<CellDataFeatures<String[], String>, ObservableValue<String>>() {
+                            @Override
+                            public ObservableValue<String> call(CellDataFeatures<String[], String> p) {
+                                return new SimpleStringProperty((p.getValue()[colNo]));
+                            }
+                        });
+                        if(i == 0) {
+                            tc.setPrefWidth(230);
+                        }
+                        else if(i == 1) {
+                            tc.setPrefWidth(230);
+                        }
+                        else if(i == 2) {
+                            tc.setPrefWidth(150);
+                        }
+                        else if(i == 3) {
+                            tc.setPrefWidth(100);
+                        }
+                        else if(i == 4) {
+                            tc.setPrefWidth(90);
+                        }
+                        else {
+                            tc.setPrefWidth(80);
+                        }
+                        table.getColumns().add(tc);
+                    }
+                    table.setItems(data);
                 }
             });
             
             
             /* Begin building center */
-            
-            
-            
-            /* Begin building right */
-            TableView<String[]> cart = new TableView<String[]>();
-            
             Button refreshCart = new Button("Refresh Cart");
             refreshCart.setTooltip(new Tooltip("Click to refresh the cart"));
             refreshCart.setOnAction(new EventHandler<ActionEvent>() {
+                @SuppressWarnings("unchecked")
                 @Override
                 public void handle(ActionEvent event) {
-                    String cartQuery = new String("SELECT r.title, a.artist_name, li.format, li.price from ");
+                    String cartQuery = new String("SELECT r.title, li.price, li.listing_id " + 
+                            "FROM Album r, Artist a, Label la, Listing li, Contains c " + 
+                            "WHERE r.release_id = li.release_id AND r.label_id = la.label_id " + 
+                            "AND li.listing_id = c.listing_id AND r.artist_id = a.artist_id");
+                    String[][] result = myDB.Query(cartQuery);
+                    
+                    cart.getColumns().clear();
+                    ObservableList<String[]> data = FXCollections.observableArrayList();
+                    data.addAll(Arrays.asList(result));
+                    data.remove(0);//remove titles from data
+                    
+                    for (int i = 0; i < result[0].length; i++) { 
+                        TableColumn tc = new TableColumn(result[0][i]);
+                        final int colNo = i;
+                        tc.setCellValueFactory(new Callback<CellDataFeatures<String[], String>, ObservableValue<String>>() {
+                            @Override
+                            public ObservableValue<String> call(CellDataFeatures<String[], String> p) {
+                                return new SimpleStringProperty((p.getValue()[colNo]));
+                            }
+                        });
+                        if(i == 0) {
+                            tc.setPrefWidth(200);
+                        }
+                        else {
+                            tc.setPrefWidth(90);
+                        }
+                        cart.getColumns().add(tc);
+                    }
+                    cart.setItems(data);
+                    
+                }
+            });
+            
+            Button addToCart = new Button("Add To Cart"); //TODO
+            addToCart.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    String[] selectedListing = table.getSelectionModel().getSelectedItem();
+                    if(selectedListing != null) {
+                        myDB.addCart(selectedListing[5]);
+                    }
+                    refreshCart.fire();
+                }
+            });
+            
+            
+            /* Begin building right */
+            Button items = new Button("Cart Summary");
+            items.setTooltip(new Tooltip("Click to find total items and total price of cart."));
+            items.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    final Stage dialog = new Stage();
+                    dialog.initModality(Modality.APPLICATION_MODAL);
+                    dialog.initOwner(primaryStage);
+                    VBox dialogVbox = new VBox();
+                    Label l = new Label();
+                    
+                    /* Querry for # items in cart and the total price */
+                    String[][] numItems = myDB.Query("CALL getCartSize();");
+                    int num = Integer.parseInt(numItems[1][0]);
+                    
+                    String[][] priItems = myDB.Query("CALL getCartPrice();");
+                    
+                    Double pri = Double.parseDouble(priItems[1][0]);
+                    String p = "0";
+                    try {
+                        p = String.format("%.2f", pri);
+                    } catch(Exception e) {
+                        
+                    }
+                    
+                    l.setText("Total items in cart: " + num +"\n\nTotal price of cart: $" + p); //TODO fix rounding issue
+                    dialogVbox.getChildren().add(l);
+                    l.setWrapText(true);
+                    Scene dialogScene = new Scene(dialogVbox, 200, 100);
+
+                    dialog.setScene(dialogScene);
+
+                    dialog.show();
                 }
             });
             
@@ -172,9 +300,15 @@ public class Main extends Application {
             delete.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
-                    
+                    String[] selectedListing = cart.getSelectionModel().getSelectedItem();
+                    if(selectedListing != null) {
+                        myDB.removeCart(selectedListing[2]);
+                    }
+                    refreshCart.fire();
                 }
             });
+            
+            refreshCart.fire();
             
             /* Populate VBoxes */
             left.getChildren().addAll(new Label("\n"), new Label("Submit a Query"), new Label("\n"), new Label("Title"), titleSearch, new Label("\n"), 
@@ -183,9 +317,9 @@ public class Main extends Application {
                     new Label("\n"), Search, new Label("\n"), randomListing);
             left.setPrefWidth(200);
             
-            center.getChildren().addAll(new Label("\n"), new Label("Search Results"), new Label("\n"), table);
+            center.getChildren().addAll(new Label("\n"), new Label("Search Results"), new Label("\n"), table, new Label("\n"), addToCart);
             
-            right.getChildren().addAll(new Label("\n"), new Label("Cart"), new Label("\n"), cart, new Label("\n"), refreshCart, new Label("\n"), delete);
+            right.getChildren().addAll(new Label("\n"), new Label("Cart"), new Label("\n"), cart, new Label("\n"), items, new Label("\n"), delete);
             right.setPrefWidth(300);
             
             /* Place the VBoxes */
