@@ -102,5 +102,36 @@ public class ConnectToDB {
     }
 
     
-    // remove from cart
+     public void removeCart(String listing_id) {
+         try {
+             
+             // removes from the contains table
+             statement = connection.createStatement();
+             resultSet = statement.executeQuery("DELETE FROM Contains WHERE user_id = 1 AND listing_id = " + listing_id + ";");       
+         }
+         catch (SQLException e) {
+             e.printStackTrace();
+         }
+     }
+     
+     public String getCondition(String listing_id) {
+         String ans = "";
+         
+         try {
+             
+             // finds media condition from listing
+             statement = connection.createStatement();
+             resultSet = statement.executeQuery("SELECT media_condition FROM Listing WHERE listing_id = " + listing_id + ";");  
+             
+             while(resultSet.next())
+                 ans = "" + resultSet.getObject(1);
+              
+         }
+         catch (SQLException e) {
+             e.printStackTrace();
+         }
+
+         System.out.println(ans);
+         return ans;
+     }
 }
