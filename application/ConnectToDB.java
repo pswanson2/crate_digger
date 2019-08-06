@@ -88,7 +88,19 @@ public class ConnectToDB {
         return tuples;
     }
     
-    // add to cart
+    public void addCart(String listing_id) {
+        
+        try {
+            
+            // add to contains table
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery("CALL addListingToContains(" + listing_id + ");");       
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     
     // remove from cart
 }
